@@ -1,0 +1,355 @@
+AWSTemplateFormatVersion: '2010-09-09'
+
+Description: |
+  Starter kit for autoupdate pipeline
+
+Parameters:
+  BranchName:
+    Type: String
+    Default: main
+  GitHubOwner:
+    Type: String
+  GitHubRepo:
+    Type: String
+
+Resources:
+  
+  ArtifactsS3Bucket:
+    Type: AWS::S3::Bucket
+    Properties:
+      BucketName: !Sub ${AWS::StackName}-artifacts-${AWS::AccountId}-${AWS::Region}
+  
+
+
+
+  ################# Custom ressource management S3 BUcket
+  EmptyS3BucketOnDeletionLambdaExecutionRole:
+    Type: "AWS::IAM::Role"
+    Properties:
+      AssumeRolePolicyDocument:
+        Version: 2012-10-17
+        Statement:
+          - Effect: Allow
+            Principal:
+              Service: lambda.amazonaws.com
+            Action:
+              - "sts:AssumeRole"
+      Policies:
+        - PolicyName: LoggingPolicy
+          PolicyDocument:
+            Version: 2012-10-17
+            Statement:
+              - Effect: Allow
+                Action:
+                  - logs:CreateLogGroup
+                  - logs:CreateLogStream
+                  - logs:PutLogEvents
+                Resource: "*"
+        - PolicyName: S3Policy
+          PolicyDocument:
+            Version: 2012-10-17
+            Statement:
+              - Effect: Allow
+                Action:
+                  - s3:List*
+                  - s3:DeleteObject
+                Resource: "*"
+  EmptyS3BucketOnDeletionLambdaFunction:
+    Type: "AWS::Lambda::Function"
+    Properties:
+      Code:
+        ZipFile: |
+          import cfnresponse
+          import boto3
+          def handler(event, context):
+              print(event)
+              print('boto version ' + boto3.__version__)
+              # Globals
+              responseData = {}
+              ResponseStatus = cfnresponse.SUCCESS
+              s3bucketName = event['ResourceProperties']['s3bucketName']
+              if event['RequestType'] == 'Create':
+                  responseData['Message'] = "Resource creation successful!"
+              elif event['RequestType'] == 'Update':
+                  responseData['Message'] = "Resource update successful!"
+              elif event['RequestType'] == 'Delete':
+                  # Need to empty the S3 bucket before it is deleted
+                  s3 = boto3.resource('s3')
+                  bucket = s3.Bucket(s3bucketName)
+                  bucket.objects.all().delete()
+                  responseData['Message'] = "Resource deletion successful!"
+              cfnresponse.send(event, context, ResponseStatus, responseData)
+      Handler: index.handler
+      Runtime: python3.10
+      Role: !GetAtt EmptyS3BucketOnDeletionLambdaExecutionRole.Arn
+  EmptyArtifactsS3BucketOnDeletionCustomResource:
+    Type: Custom::CustomResource
+    Properties:
+      ServiceToken: !GetAtt EmptyS3BucketOnDeletionLambdaFunction.Arn
+      s3bucketName: !Ref ArtifactsS3Bucket
+  ################# Custom ressource management S3 BUcket
+
+
+
+  ################### Roles
+  AutoUpdateCodePipelineRole:
+    Type: AWS::IAM::Role
+    Properties:
+      RoleName: !Sub ${AWS::StackName}-autoupdatecodepipelinerole
+      AssumeRolePolicyDocument:
+        Version: "2012-10-17"
+        Statement:
+        - Effect: "Allow"
+          Principal:
+            Service:
+            - codepipeline.amazonaws.com
+          Action:
+          - "sts:AssumeRole"
+      Path: "/"
+      ManagedPolicyArns:
+      - arn:aws:iam::aws:policy/AdministratorAccess ### to be removed
+
+
+  AutoUpdateCodeBuildRole:
+    Type: AWS::IAM::Role
+    Properties:
+      RoleName: !Sub ${AWS::StackName}-autoupdatecodebuildrole
+      AssumeRolePolicyDocument:
+        Statement:
+        - Effect: Allow
+          Principal:
+            Service:
+            - codebuild.amazonaws.com
+          Action:
+          - sts:AssumeRole
+      Path: "/"
+      ManagedPolicyArns:
+      - arn:aws:iam::aws:policy/AdministratorAccess ### to be removed
+      
+  ################### Roles
+
+
+  ##################### Code Build Projects (Linux)
+  AutoUpdateCodeBuildProject:
+    Type: AWS::CodeBuild::Project
+    Properties:
+      Name: !Sub ${AWS::StackName}-autoupdatecodebuildproject
+      Description: update the current CI/CD process
+      ServiceRole: !GetAtt AutoUpdateCodeBuildRole.Arn
+      Artifacts:
+        Type: CODEPIPELINE
+      Environment:
+        Type: LINUX_CONTAINER
+        ComputeType: BUILD_GENERAL1_SMALL
+        Image: aws/codebuild/amazonlinux2-x86_64-standard:3.0
+        EnvironmentVariables:
+          - Name: BranchName
+            Value: !Ref BranchName
+          - Name: GitHubOwner
+            Value: !Ref GitHubOwner
+          - Name: GitHubRepo
+            Value: !Ref GitHubRepo
+          - Name: ArtifactsS3Bucket
+            Value: !Ref ArtifactsS3Bucket
+      Source:
+        Type: CODEPIPELINE
+        BuildSpec: !Sub |
+          version: 0.2
+          phases:
+            install:
+              runtime-versions:
+                python: 3.8
+              commands:
+                - echo "install"
+            pre_build:
+              commands:
+              - echo "pre_build"
+            build:
+              commands:
+                - echo "build"
+                - bash ./toolchain/scripts/autoupdate-deploy.sh                
+            post_build:
+              commands:
+                - echo "post_build start"
+
+
+  ValidateCodeBuildProject:
+    Type: AWS::CodeBuild::Project
+    Properties:
+      Name: !Sub ${AWS::StackName}-validatecodebuildproject
+      Description: Validate step
+      ServiceRole: !GetAtt AutoUpdateCodeBuildRole.Arn
+      Artifacts:
+        Type: CODEPIPELINE
+      Environment:
+        Type: LINUX_CONTAINER
+        ComputeType: BUILD_GENERAL1_SMALL
+        Image: aws/codebuild/amazonlinux2-x86_64-standard:3.0
+        EnvironmentVariables:
+          - Name: BranchName
+            Value: !Ref BranchName
+          - Name: ArtifactsS3Bucket
+            Value: !Ref ArtifactsS3Bucket
+      Source:
+        Type: CODEPIPELINE
+        BuildSpec: !Sub |
+          version: 0.2
+          phases:
+            install:
+              runtime-versions:
+                python: 3.8
+              commands:
+                - echo "install"
+            pre_build:
+              commands:
+              - echo "pre_build"
+            build:
+              commands:
+                - echo "build"
+                - bash ./toolchain/scripts/validate.sh
+            post_build:
+              commands:
+                - echo "post_build start"
+
+
+  DeployCodeBuildProject:
+    Type: AWS::CodeBuild::Project
+    Properties:
+      Name: !Sub ${AWS::StackName}-deploycodebuildproject
+      Description: Deploy step
+      ServiceRole: !GetAtt AutoUpdateCodeBuildRole.Arn
+      Artifacts:
+        Type: CODEPIPELINE
+      Environment:
+        Type: LINUX_CONTAINER
+        ComputeType: BUILD_GENERAL1_SMALL
+        Image: aws/codebuild/amazonlinux2-x86_64-standard:3.0
+        EnvironmentVariables:
+          - Name: BranchName
+            Value: !Ref BranchName
+          - Name: ArtifactsS3Bucket
+            Value: !Ref ArtifactsS3Bucket
+      Source:
+        Type: CODEPIPELINE
+        BuildSpec: !Sub |
+          version: 0.2
+          phases:
+            install:
+              runtime-versions:
+                python: 3.8
+              commands:
+                - echo "install"
+            pre_build:
+              commands:
+              - echo "pre_build"
+            build:
+              commands:
+                - echo "build"
+                - bash ./toolchain/scripts/deploy.sh
+            post_build:
+              commands:
+                - echo "post_build start"
+
+
+  ##################### Code Build Projects (Linux)
+
+
+  ############### Pipeline
+
+  AutoUpdateCodePipeline:
+    Type: AWS::CodePipeline::Pipeline
+    Properties:
+      RestartExecutionOnUpdate: true
+      Name: !Sub ${AWS::StackName}-autoupdatecodepipeline
+      RoleArn: !GetAtt AutoUpdateCodePipelineRole.Arn
+      ArtifactStore:
+        Type: S3
+        Location: !Ref ArtifactsS3Bucket
+      Stages: 
+        - Name: Source
+          Actions:
+            - Name: SourceAction
+              ActionTypeId:
+                Category: Source
+                Owner: ThirdParty
+                Version: 1
+                Provider: GitHub
+              OutputArtifacts:
+                - Name: SourceOutput
+              Configuration:
+                Owner: !Ref GitHubOwner
+                Repo: !Ref GitHubRepo
+                Branch: !Ref BranchName
+                OAuthToken: '{{resolve:secretsmanager:GitHubSecret:SecretString:token}}'
+                PollForSourceChanges: false
+              RunOrder: 1
+        - Name: Deploy
+          Actions:
+
+            - Name: Validate
+              ActionTypeId:
+                Category: Build
+                Provider: CodeBuild
+                Owner: AWS
+                Version: 1
+              InputArtifacts:
+                - Name: SourceOutput
+              OutputArtifacts:
+                - Name: ValidateArtifact
+              Configuration:
+                ProjectName: !Ref ValidateCodeBuildProject
+              RunOrder: 1
+
+            - Name: AutoUpdate
+              ActionTypeId:
+                Category: Build
+                Provider: CodeBuild
+                Owner: AWS
+                Version: 1
+              InputArtifacts:
+                - Name: SourceOutput
+              OutputArtifacts:
+                - Name: AutoUpdateArtifact
+              Configuration:
+                ProjectName: !Ref AutoUpdateCodeBuildProject
+              RunOrder: 2
+
+            - Name: Deploy
+              ActionTypeId:
+                Category: Build
+                Provider: CodeBuild
+                Owner: AWS
+                Version: 1
+              InputArtifacts:
+                - Name: SourceOutput
+              OutputArtifacts:
+                - Name: DeployArtifact
+              Configuration:
+                ProjectName: !Ref DeployCodeBuildProject
+              RunOrder: 3
+            
+
+  ############# Pipeline
+
+
+  AutoUpdatePipelineWebhook:
+    Type: 'AWS::CodePipeline::Webhook'
+    Properties:
+      Authentication: GITHUB_HMAC
+      AuthenticationConfiguration:
+        SecretToken: '{{resolve:secretsmanager:GitHubSecret:SecretString:token}}'
+      Filters:
+        - JsonPath: $.ref
+          MatchEquals: 'refs/heads/{Branch}'
+      TargetPipeline: !Ref AutoUpdateCodePipeline
+      TargetAction: SourceAction
+      Name: AppPipelineWebhook
+      TargetPipelineVersion: !GetAtt 
+        - AutoUpdateCodePipeline
+        - Version
+      RegisterWithThirdParty: true
+
+
+
+
+  

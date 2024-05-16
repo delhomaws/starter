@@ -1,0 +1,31 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Description: |
+  Null application
+  This is an empty stack
+
+
+Parameters:
+  TestParameter:
+    Description: Name of the stack
+    Type: String
+    Default: 'TestValue'
+
+Conditions:
+  HasNot: !Equals
+    - 'true'
+    - 'false'
+
+Resources:
+# dummy (null) resource, never created
+  NullResource:
+    Type: 'Custom::NullResource'
+    Condition: HasNot
+
+Outputs:
+  # ref to the name of the stack
+  OutputStackName:
+    Description: Created stack name
+    Value: !Ref AWS::StackName
+  OutputTestParameter:
+    Description: Test parameter value
+    Value: !Ref TestParameter

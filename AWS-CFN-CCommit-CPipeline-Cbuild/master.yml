@@ -1,0 +1,47 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Transform: AWS::Serverless-2016-10-31
+Description: |
+  Top level stack
+  
+Parameters:
+  BranchName:
+    Type: String
+  BuildSHA1:
+    Type: String
+
+
+Conditions:
+  HasNot: !Equals
+    - "true"
+    - "false"
+
+Resources:
+  # dummy (null) resource, never created
+  NullResource:
+    Type: "Custom::NullResource"
+    Condition: HasNot
+
+
+  # Module1:
+  #   Type: AWS::CloudFormation::Stack
+  #   Properties:
+  #     TemplateURL: master/module1.yml
+  #     TimeoutInMinutes: '15'
+  #     Parameters:
+  #       BranchName: !Ref BranchName
+  #       BuildSHA1: !Ref BuildSHA1
+
+  # Module2:
+  #   Type: AWS::CloudFormation::Stack
+  #   Properties:
+  #     TemplateURL: master/module2.yml
+  #     TimeoutInMinutes: '15'
+  #     Parameters:
+  #       BranchName: !Ref BranchName
+  #       BuildSHA1: !Ref BuildSHA1
+
+
+
+Outputs:
+  OutputStackName:
+    Value: !Ref AWS::StackName
