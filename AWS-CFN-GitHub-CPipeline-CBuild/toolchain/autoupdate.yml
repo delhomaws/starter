@@ -82,6 +82,7 @@ Resources:
       Handler: index.handler
       Runtime: python3.10
       Role: !GetAtt EmptyS3BucketOnDeletionLambdaExecutionRole.Arn
+      Timeout: 900 #max 15 min
   EmptyArtifactsS3BucketOnDeletionCustomResource:
     Type: Custom::CustomResource
     Properties:
