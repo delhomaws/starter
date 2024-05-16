@@ -125,6 +125,7 @@ bash init-deploy.sh -t ghp_token -o gituser -r reponame -p /tmp/reponame
 ```
 
 ### AWS-TRF-CCommit-CPipeline-Cbuild
+
 cd into the folder AWS-TF-CCommit-CPipeline-Cbuild and run ini-deploy.sh
 
 ```bash
