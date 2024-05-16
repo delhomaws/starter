@@ -1,5 +1,5 @@
 # What is "starter"
-Starter is a `DevOps` kit to build everything by code. I hope this code will help none-DevOps user to work using DevOps principals like IaC, Immutability, Reproducibility. 
+Starter is a `DevOps` kit to build everything by code. I hope this code will help none-DevOps user to work using DevOps principals like IaC, Immutability, Reproducibility.
 
 # How to start
 ## prerequisits
