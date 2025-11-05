@@ -1,0 +1,90 @@
+# AWS CloudFormation
+*.packaged.yaml
+*.packaged.yml
+packaged-template.yaml
+packaged-template.yml
+
+# AWS SAM
+.aws-sam/
+samconfig.toml
+
+# AWS CDK
+*.d.ts
+*.js
+*.js.map
+node_modules/
+cdk.out/
+cdk.context.json
+
+# Build artifacts
+build/
+dist/
+target/
+*.zip
+*.tar.gz
+
+# Logs
+*.log
+logs/
+
+# Environment variables
+.env
+.env.local
+.env.*.local
+
+# IDE files
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# OS generated files
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+env/
+venv/
+ENV/
+env.bak/
+venv.bak/
+.pytest_cache/
+
+# Node.js
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Temporary files
+tmp/
+temp/
+*.tmp
+*.temp
+
+# AWS credentials (should never be committed)
+.aws/
+aws-credentials
+credentials
+
+# Terraform (if used alongside)
+*.tfstate
+*.tfstate.*
+.terraform/
+.terraform.lock.hcl
+
+# Local configuration overrides
+local.yml
+local.yaml
+config/local.*
