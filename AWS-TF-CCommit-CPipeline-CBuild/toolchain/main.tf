@@ -85,7 +85,7 @@ resource "aws_codebuild_project" "AutoUpdateCodeBuildProject" {
   }
   environment {
     compute_type = "BUILD_GENERAL1_SMALL"
-    image        = "aws/codebuild/amazonlinux2-x86_64-standard:3.0"
+    image        = "aws/codebuild/amazonlinux-x86_64-standard:5.0"
     type         = "LINUX_CONTAINER"
 
     environment_variable {
@@ -122,7 +122,7 @@ resource "aws_codebuild_project" "ValidateCodeBuildProject" {
   }
   environment {
     compute_type = "BUILD_GENERAL1_SMALL"
-    image        = "aws/codebuild/amazonlinux2-x86_64-standard:3.0"
+    image        = "aws/codebuild/amazonlinux-x86_64-standard:5.0"
     type         = "LINUX_CONTAINER"
 
     environment_variable {
@@ -162,7 +162,7 @@ resource "aws_codebuild_project" "DeployCodeBuildProject" {
   }
   environment {
     compute_type = "BUILD_GENERAL1_SMALL"
-    image        = "aws/codebuild/amazonlinux2-x86_64-standard:3.0"
+    image        = "aws/codebuild/amazonlinux-x86_64-standard:5.0"
     type         = "LINUX_CONTAINER"
 
     environment_variable {

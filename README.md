@@ -25,7 +25,7 @@ To Start, you need:
 
 - Install git on you working environment. You could follow this link for help, https://git-scm.com/download/mac
 
-- Install Python3, https://www.python.org/downloads/. Check that pip is installed as well with the commande ``pip --version``
+- Install Python 3.12, https://www.python.org/downloads/. Check that pip is installed as well with the commande ``pip --version``
 
 - Install git-remote-codecommit with the command bellow
 

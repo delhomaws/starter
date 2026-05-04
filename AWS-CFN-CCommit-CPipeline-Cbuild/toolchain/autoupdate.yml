@@ -94,7 +94,7 @@ Resources:
                   responseData['Message'] = "Resource deletion successful!"
               cfnresponse.send(event, context, ResponseStatus, responseData)
       Handler: index.handler
-      Runtime: python3.10
+      Runtime: python3.12
       Role: !GetAtt EmptyS3BucketOnDeletionLambdaExecutionRole.Arn
       Timeout: 900 #max 15 min
   EmptyArtifactsS3BucketOnDeletionCustomResource:
@@ -156,7 +156,7 @@ Resources:
       Environment:
         Type: LINUX_CONTAINER
         ComputeType: BUILD_GENERAL1_SMALL
-        Image: aws/codebuild/amazonlinux2-x86_64-standard:5.0
+        Image: aws/codebuild/amazonlinux-x86_64-standard:5.0
         EnvironmentVariables:
           - Name: BranchName
             Value: !Ref BranchName
@@ -196,7 +196,7 @@ Resources:
       Environment:
         Type: LINUX_CONTAINER
         ComputeType: BUILD_GENERAL1_SMALL
-        Image: aws/codebuild/amazonlinux2-x86_64-standard:5.0
+        Image: aws/codebuild/amazonlinux-x86_64-standard:5.0
         EnvironmentVariables:
           - Name: BranchName
             Value: !Ref BranchName
@@ -235,7 +235,7 @@ Resources:
       Environment:
         Type: LINUX_CONTAINER
         ComputeType: BUILD_GENERAL1_SMALL
-        Image: aws/codebuild/amazonlinux2-x86_64-standard:5.0
+        Image: aws/codebuild/amazonlinux-x86_64-standard:5.0
         EnvironmentVariables:
           - Name: BranchName
             Value: !Ref BranchName
@@ -276,7 +276,7 @@ Resources:
       Environment:
         Type: LINUX_CONTAINER
         ComputeType: BUILD_GENERAL1_SMALL
-        Image: aws/codebuild/amazonlinux2-x86_64-standard:5.0
+        Image: aws/codebuild/amazonlinux-x86_64-standard:5.0
         EnvironmentVariables:
           - Name: BranchName
             Value: !Ref BranchName
@@ -315,7 +315,7 @@ Resources:
       Environment:
         Type: LINUX_CONTAINER
         ComputeType: BUILD_GENERAL1_SMALL
-        Image: aws/codebuild/amazonlinux2-x86_64-standard:5.0
+        Image: aws/codebuild/amazonlinux-x86_64-standard:5.0
         EnvironmentVariables:
           - Name: BranchName
             Value: !Ref BranchName
@@ -354,7 +354,7 @@ Resources:
       Environment:
         Type: LINUX_CONTAINER
         ComputeType: BUILD_GENERAL1_SMALL
-        Image: aws/codebuild/amazonlinux2-x86_64-standard:5.0
+        Image: aws/codebuild/amazonlinux-x86_64-standard:5.0
         EnvironmentVariables:
           - Name: BranchName
             Value: !Ref BranchName
@@ -393,7 +393,7 @@ Resources:
       Environment:
         Type: LINUX_CONTAINER
         ComputeType: BUILD_GENERAL1_SMALL
-        Image: aws/codebuild/amazonlinux2-x86_64-standard:5.0
+        Image: aws/codebuild/amazonlinux-x86_64-standard:5.0
         EnvironmentVariables:
           - Name: BranchName
             Value: !Ref BranchName
