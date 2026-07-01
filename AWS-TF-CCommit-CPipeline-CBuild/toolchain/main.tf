@@ -20,11 +20,12 @@ resource "aws_codecommit_repository" "LocalCodeCommit" {
 
 resource "aws_s3_bucket" "ArtifactsS3Bucket" {
   bucket = join("-", ["toolchain-artifacts", data.aws_caller_identity.current_caller_identity.account_id, data.aws_region.current_region.name])
-  provisioner "local-exec" {
-    when    = destroy
-    command = "aws s3 rm s3://${self.bucket} --recursive"
 
-  }
+  # Empty the bucket on `terraform destroy` so the bucket can be deleted.
+  # force_destroy removes all objects AWS-side (including non-current versions and
+  # delete markers), unlike a local `aws s3 rm --recursive` provisioner which skips
+  # versions and depends on local AWS credentials at destroy time.
+  force_destroy = true
 }
 
 resource "aws_iam_role" "AutoUpdateCodePipelineRole" {
