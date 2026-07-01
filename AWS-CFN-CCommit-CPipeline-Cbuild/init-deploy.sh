@@ -66,6 +66,18 @@ run_init_deploy() {
 
     else
         echo "Repositiry $cc_name do not exist yet"
+
+        # The autoupdate stack is named after the repo so multiple starters can
+        # coexist in the same account/region. init-deploy only bootstraps: if the
+        # stack already exists, abort rather than clobber an existing deployment.
+        stack_name="${cc_name}-autoupdate"
+        if aws cloudformation describe-stacks --stack-name "$stack_name" >/dev/null 2>&1; then
+            echo "ERROR: CloudFormation stack '$stack_name' already exists in this account/region." >&2
+            echo "       init-deploy.sh only bootstraps a new pipeline. Use the pipeline itself to update," >&2
+            echo "       or delete the existing stack first if you intend to recreate it. Aborting." >&2
+            exit 1
+        fi
+
         echo "Create S3 bucket and zip file for repo initialization"
         cd $SCRIPT_DIR
 
@@ -90,7 +102,7 @@ run_init_deploy() {
         aws cloudformation deploy \
             --no-fail-on-empty-changeset \
             --template-file ./toolchain/autoupdate.yml \
-            --stack-name "autoupdate" \
+            --stack-name "$stack_name" \
             --capabilities CAPABILITY_IAM CAPABILITY_AUTO_EXPAND CAPABILITY_NAMED_IAM \
             --parameter-overrides \
             BranchName="main" \

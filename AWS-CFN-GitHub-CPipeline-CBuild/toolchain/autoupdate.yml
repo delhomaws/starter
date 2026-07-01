@@ -16,8 +16,9 @@ Resources:
   
   ArtifactsS3Bucket:
     Type: AWS::S3::Bucket
-    Properties:
-      BucketName: !Sub ${AWS::StackName}-artifacts-${AWS::AccountId}-${AWS::Region}
+    # BucketName intentionally omitted: CloudFormation auto-generates a unique,
+    # length-safe, lowercase name derived from the stack name. This avoids the
+    # 63-char / lowercase-only S3 naming limit that a repo-prefixed name can breach.
   
 
 
@@ -152,6 +153,8 @@ Resources:
             Value: !Ref GitHubRepo
           - Name: ArtifactsS3Bucket
             Value: !Ref ArtifactsS3Bucket
+          - Name: StackName
+            Value: !Ref AWS::StackName
       Source:
         Type: CODEPIPELINE
         BuildSpec: !Sub |
