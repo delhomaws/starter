@@ -25,7 +25,7 @@ To Start, you need:
 
 - Install git on you working environment. You could follow this link for help, https://git-scm.com/download/mac
 
-- Install Python 3.12, https://www.python.org/downloads/. Check that pip is installed as well with the commande ``pip --version``
+- Install Python 3.13, https://www.python.org/downloads/. Check that pip is installed as well with the commande ``pip --version``
 
 - Install git-remote-codecommit with the command bellow
 
@@ -56,6 +56,12 @@ All the code of the CI/CD pipeline is into the folder `/toolchain`
     |- deploy.sh
     |- validate.sh
 ```
+
+> **Build environment:** the CI/CD stages run on AWS CodeBuild using the
+> `aws/codebuild/amazonlinux-x86_64-standard:6.0` image (Amazon Linux 2023) with
+> the **Python 3.13** runtime. This matches the `python3.13` AWS Lambda runtime
+> used by the toolchain, keeping the build and execution environments aligned.
+
 
 ### Using the deployed CI/CD pipeline
 

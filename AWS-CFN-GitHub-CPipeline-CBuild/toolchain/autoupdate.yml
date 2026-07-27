@@ -82,7 +82,7 @@ Resources:
                   status = cfnresponse.SUCCESS if event['RequestType'] == 'Delete' else cfnresponse.FAILED
                   cfnresponse.send(event, context, status, data)
       Handler: index.handler
-      Runtime: python3.12
+      Runtime: python3.13
       Role: !GetAtt EmptyS3BucketOnDeletionLambdaExecutionRole.Arn
       Timeout: 900 #max 15 min
   EmptyArtifactsS3BucketOnDeletionCustomResource:
@@ -144,7 +144,7 @@ Resources:
       Environment:
         Type: LINUX_CONTAINER
         ComputeType: BUILD_GENERAL1_SMALL
-        Image: aws/codebuild/amazonlinux-x86_64-standard:5.0
+        Image: aws/codebuild/amazonlinux-x86_64-standard:6.0
         EnvironmentVariables:
           - Name: BranchName
             Value: !Ref BranchName
@@ -163,7 +163,7 @@ Resources:
           phases:
             install:
               runtime-versions:
-                python: 3.12
+                python: 3.13
               commands:
                 - echo "install"
             pre_build:
@@ -189,7 +189,7 @@ Resources:
       Environment:
         Type: LINUX_CONTAINER
         ComputeType: BUILD_GENERAL1_SMALL
-        Image: aws/codebuild/amazonlinux-x86_64-standard:5.0
+        Image: aws/codebuild/amazonlinux-x86_64-standard:6.0
         EnvironmentVariables:
           - Name: BranchName
             Value: !Ref BranchName
@@ -202,7 +202,7 @@ Resources:
           phases:
             install:
               runtime-versions:
-                python: 3.12
+                python: 3.13
               commands:
                 - echo "install"
             pre_build:
@@ -228,7 +228,7 @@ Resources:
       Environment:
         Type: LINUX_CONTAINER
         ComputeType: BUILD_GENERAL1_SMALL
-        Image: aws/codebuild/amazonlinux-x86_64-standard:5.0
+        Image: aws/codebuild/amazonlinux-x86_64-standard:6.0
         EnvironmentVariables:
           - Name: BranchName
             Value: !Ref BranchName
@@ -241,7 +241,7 @@ Resources:
           phases:
             install:
               runtime-versions:
-                python: 3.12
+                python: 3.13
               commands:
                 - echo "install"
             pre_build:
